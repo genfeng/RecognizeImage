@@ -82,28 +82,44 @@ int main()
 	// 绘制出所有轮廓
 	for (int t = 0; t < (int)contours.size(); t++)
 	{
-		double epsilon = 0.01*arcLength(contours[t], true);
-		approxPolyDP(contours[t], point, epsilon, true);
+		const vector<Point>& contour = contours[t];
+		Scalar color;
+
+		double epsilon = 0.01*arcLength(contour, true);
+		approxPolyDP(contour, point, epsilon, true);
 		if (point.size() == 3)
 		{
 			drawContours(Triangles, contours, t, Scalar(0, 0, 255), s_thickness, 8, Mat(), 0, Point());
-			drawContours(Alls, contours, t, Scalar(255, 0, 0), s_thickness, 8, Mat(), 0, Point());
+
+			color = Scalar(255, 0, 0);
+			drawContours(Alls, contours, t, color, s_thickness, 8, Mat(), 0, Point());
 		}
 		else if (point.size() == 4)
 		{
 			drawContours(Rects, contours, t, Scalar(0, 0, 255), s_thickness, 8, Mat(), 0, Point());
-			drawContours(Alls, contours, t, Scalar(0, 255, 0), s_thickness, 8, Mat(), 0, Point());
+
+			color = Scalar(0, 255, 0);
+			drawContours(Alls, contours, t, color, s_thickness, 8, Mat(), 0, Point());
 		}
 		else if (point.size() == 2)
 		{
 			drawContours(Lines, contours, t, Scalar(0, 0, 255), s_thickness, 8, Mat(), 0, Point());
-			drawContours(Alls, contours, t, Scalar(0, 0, 255), s_thickness, 8, Mat(), 0, Point());
+
+			color = Scalar(0, 0, 255);
+			drawContours(Alls, contours, t, color, s_thickness, 8, Mat(), 0, Point());
 		}
 		else
 		{
-			double area = contourArea(contours[t]);
+			double area = contourArea(contour);
 			drawContours(Plines, contours, t, Scalar(0, 0, 255), s_thickness, 8, Mat(), 0, Point());
-			drawContours(Alls, contours, t, Scalar(255, 0, 255), s_thickness, 8, Mat(), 0, Point());
+
+			color = Scalar(255, 0, 255);
+			drawContours(Alls, contours, t, color, s_thickness, 8, Mat(), 0, Point());
+		}
+
+		for (int j = 0; j < contour.size(); j++)
+		{
+			circle(Alls, contour[j], 1, color, s_thickness, 8, 0);
 		}
 		cout << "边的数目：" << point.size() << endl;
 	}
