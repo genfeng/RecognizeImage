@@ -8,6 +8,7 @@
 #include <windows.h>
 #include <string>
 #include <map>
+#include "CImageProcess.h"
 
 #define MATCHMETHOD TM_SQDIFF_NORMED//宏定义匹配模式
 using namespace cv;
@@ -380,60 +381,60 @@ void Refine(Mat& image)
     }
 }
 
-int main()
-{
-    String s_img_path = GetExePath() + "\\..\\ImgTest\\";
-
-    Mat src = imread(s_img_path + "2.png");
-    if (src.empty())
-    {
-        src = imread(s_img_path + "1.png");
-        if (src.empty())
-        {
-            printf("Could not load image...");
-            return -1;
-        }
-    }
-    Mat src_gray, binary;
-    Mat Triangles(src.rows, src.cols, CV_8UC3, Scalar(0, 0, 0)), Rects = Triangles.clone();
-    Mat BigCircles = Triangles.clone(), Lines = Triangles.clone(), Plines = Triangles.clone();
-    Mat Alls = src.clone();
-
-    //二值化
-    cvtColor(src, src_gray, COLOR_BGR2GRAY);
-    Mat src_bit;
-    bilateralFilter(src_gray, src_bit, 10, 20, 20);
-    //     Mat src_dilate;
-    //     Mat element = getStructuringElement(MORPH_RECT, Size(3, 3));
-    //     //高级形态学处理，调用这个函数就可以了，具体要选择哪种操作，就修改第三个参数就可以了
-    //     morphologyEx(src_gray, src_dilate, MORPH_DILATE, element);
-    //     imwrite(s_img_path + "src_dilate.jpg", src_dilate);
-    threshold(src_bit, binary, 0, 255, THRESH_BINARY | THRESH_OTSU);
-    binary = ~binary;
-    Refine(binary);
-    imwrite(s_img_path + "2_binary.jpg", binary);
-
-    //发现轮廓
-    vector<vector<Point>> contours;
-    vector<Point> point;
-    vector<Vec4i> hireachy;
-    findContours(binary, contours, hireachy, RETR_TREE, CHAIN_APPROX_SIMPLE, Point());
-
-    Point test1(450, 2630);
-    Point test2(1194, 2933);
-    Point test3(1080, 1552);
-    int min_test1(INT_MAX), min_test2(INT_MAX), min_test3(INT_MAX);
-    Point p_test1(450, 2630);
-    Point p_test2(1194, 2933);
-    Point p_test3(1080, 1552);
-    vector<vector<Point>> min_contours(3);
-    // 绘制出所有轮廓
-    static int s_thickness = 1;
-    for (int t = 0; t < (int)contours.size(); t++)
-    {
-        vector<Point>& contour = contours[t];
-        Scalar color;
-
+// int main()
+// {
+//     String s_img_path = GetExePath() + "\\..\\ImgTest\\";
+// 
+//     Mat src = imread(s_img_path + "2.png");
+//     if (src.empty())
+//     {
+//         src = imread(s_img_path + "1.png");
+//         if (src.empty())
+//         {
+//             printf("Could not load image...");
+//             return -1;
+//         }
+//     }
+//     Mat src_gray, binary;
+//     Mat Triangles(src.rows, src.cols, CV_8UC3, Scalar(0, 0, 0)), Rects = Triangles.clone();
+//     Mat BigCircles = Triangles.clone(), Lines = Triangles.clone(), Plines = Triangles.clone();
+//     Mat Alls = src.clone();
+// 
+//     //二值化
+//     cvtColor(src, src_gray, COLOR_BGR2GRAY);
+//     Mat src_bit;
+//     bilateralFilter(src_gray, src_bit, 10, 20, 20);
+//     //     Mat src_dilate;
+//     //     Mat element = getStructuringElement(MORPH_RECT, Size(3, 3));
+//     //     //高级形态学处理，调用这个函数就可以了，具体要选择哪种操作，就修改第三个参数就可以了
+//     //     morphologyEx(src_gray, src_dilate, MORPH_DILATE, element);
+//     //     imwrite(s_img_path + "src_dilate.jpg", src_dilate);
+//     threshold(src_bit, binary, 0, 255, THRESH_BINARY | THRESH_OTSU);
+//     binary = ~binary;
+//     Refine(binary);
+//     imwrite(s_img_path + "2_binary.jpg", binary);
+// 
+//     //发现轮廓
+//     vector<vector<Point>> contours;
+//     vector<Point> point;
+//     vector<Vec4i> hireachy;
+//     findContours(binary, contours, hireachy, RETR_TREE, CHAIN_APPROX_SIMPLE, Point());
+// 
+//     Point test1(450, 2630);
+//     Point test2(1194, 2933);
+//     Point test3(1080, 1552);
+//     int min_test1(INT_MAX), min_test2(INT_MAX), min_test3(INT_MAX);
+//     Point p_test1(450, 2630);
+//     Point p_test2(1194, 2933);
+//     Point p_test3(1080, 1552);
+//     vector<vector<Point>> min_contours(3);
+//     // 绘制出所有轮廓
+//     static int s_thickness = 1;
+//     for (int t = 0; t < (int)contours.size(); t++)
+//     {
+//         vector<Point>& contour = contours[t];
+//         Scalar color;
+// 
 //         cv::Moments moment = cv::moments(cv::Mat(contour));
 //         if (moment.m00 > 0.000001) {
 //             Point temp(moment.m10 / moment.m00, moment.m01 / moment.m00);
@@ -457,40 +458,40 @@ int main()
 //             }
 //         }
 //         continue;
-
-        double epsilon = 0.01*arcLength(contour, true);
-        approxPolyDP(contour, point, epsilon, true);
-        if (point.size() == 3)
-        {
-            drawContours(Triangles, contours, t, Scalar(0, 0, 255), s_thickness, 8, Mat(), 0, Point());
-
-            color = Scalar(255, 0, 0);
-            drawContours(Alls, contours, t, color, s_thickness, 8, Mat(), 0, Point());
-        }
-        else if (point.size() == 4)
-        {
-            drawContours(Rects, contours, t, Scalar(0, 0, 255), s_thickness, 8, Mat(), 0, Point());
-
-            color = Scalar(0, 255, 0);
-            drawContours(Alls, contours, t, color, s_thickness, 8, Mat(), 0, Point());
-        }
-        else if (point.size() == 2)
-        {
-            drawContours(Lines, contours, t, Scalar(0, 0, 255), s_thickness, 8, Mat(), 0, Point());
-
-            color = Scalar(0, 0, 255);
-            drawContours(Alls, contours, t, color, s_thickness, 8, Mat(), 0, Point());
-        }
-        else
-        {
-            double area = contourArea(contour);
-            drawContours(Plines, contours, t, Scalar(0, 0, 255), s_thickness, 8, Mat(), 0, Point());
-
-            color = Scalar(255, 0, 255);
-            drawContours(Alls, contours, t, color, s_thickness, 8, Mat(), 0, Point());
-        }
-        cout << "边的数目：" << point.size() << endl;
-    }
+// 
+//         double epsilon = 0.01*arcLength(contour, true);
+//         approxPolyDP(contour, point, epsilon, true);
+//         if (point.size() == 3)
+//         {
+//             drawContours(Triangles, contours, t, Scalar(0, 0, 255), s_thickness, 8, Mat(), 0, Point());
+// 
+//             color = Scalar(255, 0, 0);
+//             drawContours(Alls, contours, t, color, s_thickness, 8, Mat(), 0, Point());
+//         }
+//         else if (point.size() == 4)
+//         {
+//             drawContours(Rects, contours, t, Scalar(0, 0, 255), s_thickness, 8, Mat(), 0, Point());
+// 
+//             color = Scalar(0, 255, 0);
+//             drawContours(Alls, contours, t, color, s_thickness, 8, Mat(), 0, Point());
+//         }
+//         else if (point.size() == 2)
+//         {
+//             drawContours(Lines, contours, t, Scalar(0, 0, 255), s_thickness, 8, Mat(), 0, Point());
+// 
+//             color = Scalar(0, 0, 255);
+//             drawContours(Alls, contours, t, color, s_thickness, 8, Mat(), 0, Point());
+//         }
+//         else
+//         {
+//             double area = contourArea(contour);
+//             drawContours(Plines, contours, t, Scalar(0, 0, 255), s_thickness, 8, Mat(), 0, Point());
+// 
+//             color = Scalar(255, 0, 255);
+//             drawContours(Alls, contours, t, color, s_thickness, 8, Mat(), 0, Point());
+//         }
+//         cout << "边的数目：" << point.size() << endl;
+//     }
 //     drawContours(Alls, min_contours, 0, Scalar(0, 0, 255), s_thickness, 8, Mat(), 0, Point());
 //     drawContours(Alls, min_contours, 1, Scalar(0, 0, 255), s_thickness, 8, Mat(), 0, Point());
 //     drawContours(Alls, min_contours, 2, Scalar(0, 0, 255), s_thickness, 8, Mat(), 0, Point());
@@ -505,13 +506,43 @@ int main()
 //     putText(Alls, "1", p_test1, font_face, font_scale, cv::Scalar(0, 0, 255), thickness, 8, 0);
 //     putText(Alls, "2", p_test2, font_face, font_scale, cv::Scalar(255, 0, 0), thickness, 8, 0);
 //     putText(Alls, "3", p_test3, font_face, font_scale, cv::Scalar(0, 255, 0), thickness, 8, 0);
+// 
+//     imwrite(s_img_path + "1_Triangles.jpg", Triangles);
+//     imwrite(s_img_path + "1_Rects.jpg", Rects);
+//     imwrite(s_img_path + "1_Lines.jpg", Lines);
+//     imwrite(s_img_path + "1_Plines.jpg", Plines);
+//     imwrite(s_img_path + "1_Alls.jpg", Alls);
+// 
+//     waitKey(0);
+// 
+//     return 0;
+// }
 
-    imwrite(s_img_path + "1_Triangles.jpg", Triangles);
-    imwrite(s_img_path + "1_Rects.jpg", Rects);
-    imwrite(s_img_path + "1_Lines.jpg", Lines);
-    imwrite(s_img_path + "1_Plines.jpg", Plines);
+int main()
+{
+    String s_img_path = GetExePath() + "\\..\\ImgTest\\";
+    CImageProcess image_process(s_img_path + "1.png");
+    Point test1(450, 2630);
+    Point test2(1194, 2933);
+    Point test3(1080, 1552);
+    vector<vector<Point>> min_contours(3);
+    min_contours[0] = image_process.GetNearestContourByPoint(test1);
+    min_contours[1] = image_process.GetNearestContourByPoint(test2);
+    min_contours[2] = image_process.GetNearestContourByPoint(test3);
+
+    Mat Alls(image_process.GetClone());
+    int s_thickness = 1;
+    drawContours(Alls, min_contours, 0, Scalar(0, 0, 255), s_thickness, 8, Mat(), 0, Point());
+    drawContours(Alls, min_contours, 1, Scalar(0, 0, 255), s_thickness, 8, Mat(), 0, Point());
+    drawContours(Alls, min_contours, 2, Scalar(0, 0, 255), s_thickness, 8, Mat(), 0, Point());
+
+    int font_face = cv::FONT_HERSHEY_COMPLEX;
+    double font_scale = 1;
+    int thickness = 1;
+    putText(Alls, "1", test1, font_face, font_scale, cv::Scalar(0, 0, 255), thickness, 8, 0);
+    putText(Alls, "2", test2, font_face, font_scale, cv::Scalar(255, 0, 0), thickness, 8, 0);
+    putText(Alls, "3", test3, font_face, font_scale, cv::Scalar(0, 255, 0), thickness, 8, 0);
     imwrite(s_img_path + "1_Alls.jpg", Alls);
-
     waitKey(0);
 
     return 0;
