@@ -30,7 +30,7 @@ const std::vector<cv::Point> CImageProcess::GetNearestContourByPoint(const cv::P
         cv::Moments moment = cv::moments(cv::Mat(contour));
         if (moment.m00 > 0.000001) {
             Point temp(moment.m10 / moment.m00, moment.m01 / moment.m00);
-            int distance = pow(temp.x - point.x, 2) + pow(temp.y - point.y, 2);
+            int distance = std::pow((double)(temp.x - point.x), 2) + std::pow((double)(temp.y - point.y), 2);
             if (distance < min_distance) {
                 nearest_contour = contour;
                 min_distance = distance;
@@ -76,11 +76,13 @@ void CImageProcess::CalculateContours()
     //     imwrite(s_img_path + "src_dilate.jpg", src_dilate);
     threshold(src_bilateral, binary, 0, 255, THRESH_BINARY | THRESH_OTSU);
     binary = ~binary;
-    ThinBinaryImage(binary);
+    Mat binary_thin = binary.clone();
+    ThinBinaryImage2(binary, binary_thin, 10);
+    imwrite(path_ + "binary.jpg", binary_thin);
 
     //发现轮廓
     vector<Vec4i> hireachy;
-    findContours(binary, contours_, hireachy, RETR_TREE, CHAIN_APPROX_SIMPLE, Point());
+    findContours(binary_thin, contours_, hireachy, RETR_TREE, CHAIN_APPROX_SIMPLE, Point());
 }
 
 //四周细化算法
@@ -248,12 +250,12 @@ void CImageProcess::ThinBinaryImage2(const cv::Mat& src, cv::Mat& dst, const int
     int n = 0, i = 0, j = 0;
     Mat tmpImg;
     uchar *pU, *pC, *pD;
-    BOOL isFinished = FALSE;
+    bool isFinished = false;
 
     for (n = 0; n < iterations; n++)
     {
         dst.copyTo(tmpImg);
-        isFinished = FALSE;   //一次 先行后列扫描 开始
+        isFinished = false;   //一次 先行后列扫描 开始
         //扫描过程一 开始
         for (i = 1; i < height; i++)
         {
@@ -312,15 +314,8 @@ void CImageProcess::ThinBinaryImage2(const cv::Mat& src, cv::Mat& dst, const int
                             if ((p2*p4*p6 == 0) && (p4*p6*p8 == 0))
                             {
                                 dst.ptr<uchar>(i)[j] = 0;
-                                isFinished = TRUE;
+                                isFinished = true;
                             }
-
-                            //   if((p2*p4*p8==0)&&(p2*p6*p8==0))
-                           //    {                           
-                           //         dst.ptr<uchar>(i)[j]=0;
-                           //         isFinished =TRUE;                            
-                           //    }
-
                         }
                     }
                 }
@@ -384,16 +379,10 @@ void CImageProcess::ThinBinaryImage2(const cv::Mat& src, cv::Mat& dst, const int
                         {
                             if (ap == 1)
                             {
-                                //   if((p2*p4*p6==0)&&(p4*p6*p8==0))
-                                //   {                           
-                               //         dst.ptr<uchar>(i)[j]=0;
-                               //         isFinished =TRUE;                            
-                               //    }
-
                                 if ((p2*p4*p8 == 0) && (p2*p6*p8 == 0))
                                 {
                                     dst.ptr<uchar>(i)[j] = 0;
-                                    isFinished = TRUE;
+                                    isFinished = true;
                                 }
 
                             }
@@ -404,7 +393,7 @@ void CImageProcess::ThinBinaryImage2(const cv::Mat& src, cv::Mat& dst, const int
 
             } //一次 先行后列扫描完成
             //如果在扫描过程中没有删除点，则提前退出
-            if (isFinished == FALSE)
+            if (isFinished == false)
             {
                 break;
             }

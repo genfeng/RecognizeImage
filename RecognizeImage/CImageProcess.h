@@ -1,7 +1,6 @@
 #pragma once
 #include <opencv2/opencv.hpp>
 #include <iostream>
-#include <windows.h>
 #include <string>
 #include <map>
 #include <vector>
