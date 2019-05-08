@@ -5,8 +5,8 @@
 
 #include <opencv2/opencv.hpp>
 #include <iostream>
-#include <windows.h>
 #include <string>
+#include <windows.h>
 #include <map>
 #include "CImageProcess.h"
 
@@ -67,12 +67,12 @@ void Thin(const Mat &src, Mat &dst, const int iterations)
     int n = 0, i = 0, j = 0;
     Mat tmpImg;
     uchar *pU, *pC, *pD;
-    BOOL isFinished = FALSE;
+    bool finished = false;
 
     for (n = 0; n < iterations; n++)
     {
         dst.copyTo(tmpImg);
-        isFinished = FALSE;   //一次 先行后列扫描 开始
+        finished = false;   //一次 先行后列扫描 开始
         //扫描过程一 开始
         for (i = 1; i < height; i++)
         {
@@ -131,15 +131,8 @@ void Thin(const Mat &src, Mat &dst, const int iterations)
                             if ((p2*p4*p6 == 0) && (p4*p6*p8 == 0))
                             {
                                 dst.ptr<uchar>(i)[j] = 0;
-                                isFinished = TRUE;
+                                finished = true;
                             }
-
-                            //   if((p2*p4*p8==0)&&(p2*p6*p8==0))
-                           //    {                           
-                           //         dst.ptr<uchar>(i)[j]=0;
-                           //         isFinished =TRUE;                            
-                           //    }
-
                         }
                     }
                 }
@@ -203,16 +196,10 @@ void Thin(const Mat &src, Mat &dst, const int iterations)
                         {
                             if (ap == 1)
                             {
-                                //   if((p2*p4*p6==0)&&(p4*p6*p8==0))
-                                //   {                           
-                               //         dst.ptr<uchar>(i)[j]=0;
-                               //         isFinished =TRUE;                            
-                               //    }
-
                                 if ((p2*p4*p8 == 0) && (p2*p6*p8 == 0))
                                 {
                                     dst.ptr<uchar>(i)[j] = 0;
-                                    isFinished = TRUE;
+                                    finished = true;
                                 }
 
                             }
@@ -223,7 +210,7 @@ void Thin(const Mat &src, Mat &dst, const int iterations)
 
             } //一次 先行后列扫描完成
             //如果在扫描过程中没有删除点，则提前退出
-            if (isFinished == FALSE)
+            if (finished == false)
             {
                 break;
             }
@@ -436,28 +423,28 @@ void Refine(Mat& image)
 //         Scalar color;
 // 
 //         cv::Moments moment = cv::moments(cv::Mat(contour));
-//         if (moment.m00 > 0.000001) {
-//             Point temp(moment.m10 / moment.m00, moment.m01 / moment.m00);
-//             int dis1 = pow(temp.x - test1.x, 2) + pow(temp.y - test1.y, 2);
-//             if (dis1 < min_test1) {
-//                 min_contours[0] = contour;
-//                 min_test1 = dis1;
-//                 p_test1 = temp;
-//             }
-//             int dis2 = pow(temp.x - test2.x, 2) + pow(temp.y - test2.y, 2);
-//             if (dis2 < min_test2) {
-//                 min_contours[1] = contour;
-//                 min_test2 = dis2;
-//                 p_test2 = temp;
-//             }
-//             int dis3 = pow(temp.x - test3.x, 2) + pow(temp.y - test3.y, 2);
-//             if (dis3 < min_test3) {
-//                 min_contours[2] = contour;
-//                 min_test3 = dis3;
-//                 p_test3 = temp;
-//             }
-//         }
-//         continue;
+// //         if (moment.m00 > 0.000001) {
+// //             Point temp(moment.m10 / moment.m00, moment.m01 / moment.m00);
+// //             int dis1 = pow(temp.x - test1.x, 2) + pow(temp.y - test1.y, 2);
+// //             if (dis1 < min_test1) {
+// //                 min_contours[0] = contour;
+// //                 min_test1 = dis1;
+// //                 p_test1 = temp;
+// //             }
+// //             int dis2 = pow(temp.x - test2.x, 2) + pow(temp.y - test2.y, 2);
+// //             if (dis2 < min_test2) {
+// //                 min_contours[1] = contour;
+// //                 min_test2 = dis2;
+// //                 p_test2 = temp;
+// //             }
+// //             int dis3 = pow(temp.x - test3.x, 2) + pow(temp.y - test3.y, 2);
+// //             if (dis3 < min_test3) {
+// //                 min_contours[2] = contour;
+// //                 min_test3 = dis3;
+// //                 p_test3 = temp;
+// //             }
+// //         }
+// //         continue;
 // 
 //         double epsilon = 0.01*arcLength(contour, true);
 //         approxPolyDP(contour, point, epsilon, true);
@@ -492,20 +479,20 @@ void Refine(Mat& image)
 //         }
 //         cout << "边的数目：" << point.size() << endl;
 //     }
-//     drawContours(Alls, min_contours, 0, Scalar(0, 0, 255), s_thickness, 8, Mat(), 0, Point());
-//     drawContours(Alls, min_contours, 1, Scalar(0, 0, 255), s_thickness, 8, Mat(), 0, Point());
-//     drawContours(Alls, min_contours, 2, Scalar(0, 0, 255), s_thickness, 8, Mat(), 0, Point());
-// 
-//     int font_face = cv::FONT_HERSHEY_COMPLEX;
-//     double font_scale = 1;
-//     int thickness = 1;
-//     putText(Alls, "1", test1, font_face, font_scale, cv::Scalar(0, 0, 255), thickness, 8, 0);
-//     putText(Alls, "2", test2, font_face, font_scale, cv::Scalar(255, 0, 0), thickness, 8, 0);
-//     putText(Alls, "3", test3, font_face, font_scale, cv::Scalar(0, 255, 0), thickness, 8, 0);
-// 
-//     putText(Alls, "1", p_test1, font_face, font_scale, cv::Scalar(0, 0, 255), thickness, 8, 0);
-//     putText(Alls, "2", p_test2, font_face, font_scale, cv::Scalar(255, 0, 0), thickness, 8, 0);
-//     putText(Alls, "3", p_test3, font_face, font_scale, cv::Scalar(0, 255, 0), thickness, 8, 0);
+// //     drawContours(Alls, min_contours, 0, Scalar(0, 0, 255), s_thickness, 8, Mat(), 0, Point());
+// //     drawContours(Alls, min_contours, 1, Scalar(0, 0, 255), s_thickness, 8, Mat(), 0, Point());
+// //     drawContours(Alls, min_contours, 2, Scalar(0, 0, 255), s_thickness, 8, Mat(), 0, Point());
+// // 
+// //     int font_face = cv::FONT_HERSHEY_COMPLEX;
+// //     double font_scale = 1;
+// //     int thickness = 1;
+// //     putText(Alls, "1", test1, font_face, font_scale, cv::Scalar(0, 0, 255), thickness, 8, 0);
+// //     putText(Alls, "2", test2, font_face, font_scale, cv::Scalar(255, 0, 0), thickness, 8, 0);
+// //     putText(Alls, "3", test3, font_face, font_scale, cv::Scalar(0, 255, 0), thickness, 8, 0);
+// // 
+// //     putText(Alls, "1", p_test1, font_face, font_scale, cv::Scalar(0, 0, 255), thickness, 8, 0);
+// //     putText(Alls, "2", p_test2, font_face, font_scale, cv::Scalar(255, 0, 0), thickness, 8, 0);
+// //     putText(Alls, "3", p_test3, font_face, font_scale, cv::Scalar(0, 255, 0), thickness, 8, 0);
 // 
 //     imwrite(s_img_path + "1_Triangles.jpg", Triangles);
 //     imwrite(s_img_path + "1_Rects.jpg", Rects);
